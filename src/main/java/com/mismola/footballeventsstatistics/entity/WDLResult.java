@@ -1,5 +1,5 @@
 package com.mismola.footballeventsstatistics.entity;
 
-public class Statistics {
-
+public enum WDLResult {
+    W, D, L
 }
