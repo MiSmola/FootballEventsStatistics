@@ -1,4 +1,4 @@
-package com.mismola.footballeventsstatistics.entity;
+package com.mismola.footballeventsstatistics.model.entity;
 
 import java.util.Date;
 
