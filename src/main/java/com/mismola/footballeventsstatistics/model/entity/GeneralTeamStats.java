@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "general_team_stats")
+@SequenceGenerator(name = "seq_general_team_stats", sequenceName = "seq_general_team_stats", allocationSize = 1)
 public class GeneralTeamStats {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_general_team_stats")
     private Integer id;
 
     @Column(name = "sum_of_played_events")

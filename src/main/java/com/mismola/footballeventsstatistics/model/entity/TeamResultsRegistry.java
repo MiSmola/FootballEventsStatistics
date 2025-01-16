@@ -10,9 +10,10 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "team_results_registry")
+@SequenceGenerator(name = "seq_team_results_registry", sequenceName = "seq_team_results_registry", allocationSize = 1)
 public class TeamResultsRegistry {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_team_results_registry")
     private Integer id;
 
     @Column(name = "match_date_time")

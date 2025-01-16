@@ -1,7 +1,7 @@
 package com.mismola.footballeventsstatistics.controller.api;
 
 import com.mismola.footballeventsstatistics.model.entity.Team;
-import com.mismola.footballeventsstatistics.service.TeamService;
+import com.mismola.footballeventsstatistics.model.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

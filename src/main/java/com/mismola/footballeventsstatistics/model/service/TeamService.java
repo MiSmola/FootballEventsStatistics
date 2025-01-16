@@ -1,4 +1,4 @@
-package com.mismola.footballeventsstatistics.service;
+package com.mismola.footballeventsstatistics.model.service;
 
 import com.mismola.footballeventsstatistics.model.entity.Team;
 import com.mismola.footballeventsstatistics.model.repository.TeamRepository;
