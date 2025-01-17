@@ -30,9 +30,7 @@ public class Team {
     private GeneralTeamStats generalTeamStats;
 
     // One-to-Many relationship with TeamResultsRegistry
-    @OneToMany(mappedBy = "homeTeam", cascade = CascadeType.ALL)
-    private List<TeamResultsRegistry> homeMatches;
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    private List<TeamResultsRegistry> matches;
 
-    @OneToMany(mappedBy = "awayTeam", cascade = CascadeType.ALL)
-    private List<TeamResultsRegistry> awayMatches;
 }

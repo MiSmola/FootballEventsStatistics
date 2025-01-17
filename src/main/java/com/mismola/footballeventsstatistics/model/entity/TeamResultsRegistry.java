@@ -1,14 +1,17 @@
 package com.mismola.footballeventsstatistics.model.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Builder
+@Getter
+@Setter
 @Table(name = "team_results_registry")
 @SequenceGenerator(name = "seq_team_results_registry", sequenceName = "seq_team_results_registry", allocationSize = 1)
 public class TeamResultsRegistry {
@@ -19,33 +22,22 @@ public class TeamResultsRegistry {
     @Column(name = "match_date_time")
     private Date matchDateTime;
 
-    @Column(name = "points_gained_home")
-    private Integer pointsGainedHome;
-
-    @Column(name = "points_gained_away")
-    private Integer pointsGainedAway;
-
-    @Column(name = "goals_scored_home")
-    private Integer goalsScoredHome;
-
-    @Column(name = "goals_scored_away")
-    private Integer goalsScoredAway;
-
-    @Column(name = "wld_home_team")
+    @Column(name = "wld_result")
     @Enumerated(EnumType.STRING)
-    private WDLResult wdlHomeTeam;
+    private WDLResult wdlResult;
 
-    @Column(name = "wld_away_team")
-    @Enumerated(EnumType.STRING)
-    private WDLResult wdlAwayTeam;
+    @Column(name = "goals_scored")
+    private Integer goalsScored;
+
+    @Column(name = "goals_conceded")
+    private Integer goalsConceded;
+
+    @Column(name = "points_gained")
+    private Integer pointsGained;
 
     // Many-to-One relationship with Team (home team)
     @ManyToOne
-    @JoinColumn(name = "home_team_id", referencedColumnName = "id")
-    private Team homeTeam;
+    @JoinColumn(name = "team_id", referencedColumnName = "id")
+    private Team team;
 
-    // Many-to-One relationship with Team (away team)
-    @ManyToOne
-    @JoinColumn(name = "away_team_id", referencedColumnName = "id")
-    private Team awayTeam;
 }

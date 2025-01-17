@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.GetStatisticsMessage;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.ResultMessage;
-import com.mismola.footballeventsstatistics.model.service.GeneralTeamStatsService;
 import com.mismola.footballeventsstatistics.services.ResultProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,8 +26,8 @@ public class IncomingMessageController {
     @Autowired
     private ResultProcessingService resultProcessingService;
 
-    @Autowired
-    private GeneralTeamStatsService generalTeamStatsService;
+//    @Autowired
+//    private GeneralTeamStatsService generalTeamStatsService;
 
     @PostMapping
     public String processMessage(@RequestBody JsonNode jsonNode) throws IOException {

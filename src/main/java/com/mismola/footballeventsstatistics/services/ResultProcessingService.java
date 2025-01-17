@@ -4,13 +4,17 @@ import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.R
 import com.mismola.footballeventsstatistics.model.dto.RecentGeneralTeamStatsDto;
 import com.mismola.footballeventsstatistics.model.entity.GeneralTeamStats;
 import com.mismola.footballeventsstatistics.model.entity.Team;
+import com.mismola.footballeventsstatistics.model.entity.TeamResultsRegistry;
+import com.mismola.footballeventsstatistics.model.entity.WDLResult;
 import com.mismola.footballeventsstatistics.model.repository.GeneralTeamStatsRepository;
 import com.mismola.footballeventsstatistics.model.repository.TeamRepository;
 import com.mismola.footballeventsstatistics.model.repository.TeamResultsRegistryRepository;
-import com.mismola.footballeventsstatistics.model.service.GeneralTeamStatsService;
+//import com.mismola.footballeventsstatistics.model.service.GeneralTeamStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +29,7 @@ public class ResultProcessingService {
     @Autowired
     private TeamResultsRegistryRepository teamResultsRegistryRepository;
 
-    private final GeneralTeamStatsService generalTeamStatsService;
+//    private final GeneralTeamStatsService generalTeamStatsService;
 
     public void populateResultData(ResultMessage resultMessage) {
         // Check or create the home team
@@ -133,65 +137,39 @@ public class ResultProcessingService {
         generalTeamStatsRepository.save(statsHome);
         generalTeamStatsRepository.save(statsAway);
 
+/// //////////////////////////////////////////////////////////////////////////////////////
 
+        WDLResult homeTeamRegistryWDL;
+        WDLResult awayTeamRegistryWDL;
+        if(resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
+            homeTeamRegistryWDL = WDLResult.W;
+            awayTeamRegistryWDL = WDLResult.L;
+        } else if(resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
+            homeTeamRegistryWDL = WDLResult.L;
+            awayTeamRegistryWDL = WDLResult.W;
+        } else {
+            homeTeamRegistryWDL = WDLResult.D;
+            awayTeamRegistryWDL = WDLResult.D;
+        }
+        Date matchEntryDate = new Date();
+        TeamResultsRegistry homeTeamRegistryEntry = TeamResultsRegistry.builder()
+                .matchDateTime(matchEntryDate)
+                .wdlResult(homeTeamRegistryWDL)
+                .goalsScored(resultMessage.getHomeScore())
+                .goalsConceded(resultMessage.getAwayScore())
+                .pointsGained(homeTeamPointsEarned)
+                .team(homeTeam).build();
 
+        TeamResultsRegistry awayTeamRegistryEntry = TeamResultsRegistry.builder()
+                .matchDateTime(matchEntryDate)
+                .wdlResult(awayTeamRegistryWDL)
+                .goalsScored(resultMessage.getAwayScore())
+                .goalsConceded(resultMessage.getHomeScore())
+                .pointsGained(awayTeamPointsEarned)
+                .team(awayTeam).build();
 
-//        // Create GeneralTeamStats
-//        RecentGeneralTeamStatsDto homeTeamStatsDto = RecentGeneralTeamStatsDto.builder()
-//                .sumOfPlayedEvents(1)
-//                .sumOfPoints(homeTeamPointsEarned)
-//                .sumOfGoalsScored(resultMessage.getHomeScore())
-//                .sumOfGoalsConceded(resultMessage.getAwayScore())
-//                .build();
-//        GeneralTeamStats updatedHomeTeamStats =
-//                generalTeamStatsService.downloadAndUpdateStats(resultMessage.getHomeTeam(), homeTeamStatsDto);
-//
-//        RecentGeneralTeamStatsDto awayTeamStatsDto = RecentGeneralTeamStatsDto.builder()
-//                .sumOfPlayedEvents(1)
-//                .sumOfPoints(awayTeamPointsEarned)
-//                .sumOfGoalsScored(resultMessage.getAwayScore())
-//                .sumOfGoalsConceded(resultMessage.getHomeScore())
-//                .build();
-//        GeneralTeamStats updatedAwayTeamStats =
-//                generalTeamStatsService.downloadAndUpdateStats(resultMessage.getAwayTeam(), awayTeamStatsDto);
-
-
-
-//        stats.setSumOfPlayedEvents(resultMessage.getSumOfPlayedEvents());
-//        stats.setSumOfPoints(resultMessage.getSumOfPoints());
-//        stats.setSumOfGoalsScored(resultMessage.getSumOfGoalsScored());
-//        stats.setSumOfGoalsConceded(resultMessage.getSumOfGoalsConceded());
-//        stats.setTeam(team);
-//
-//        team.setGeneralTeamStats(stats);
-//
-//        // Add TeamResultsRegistry for home matches
-//        List<TeamResultsRegistry> homeMatches = resultMessage.getHomeMatches().stream().map(match -> {
-//            TeamResultsRegistry registry = new TeamResultsRegistry();
-//            registry.setMatchDateTime(match.getMatchDateTime());
-//            registry.setPointsGainedHome(match.getPointsGainedHome());
-//            registry.setGoalsScoredHome(match.getGoalsScoredHome());
-//            registry.setWdlHomeTeam(match.getWdlHomeTeam());
-//            registry.setHomeTeam(team);
-//            return registry;
-//        }).collect(Collectors.toList());
-//
-//        team.setHomeMatches(homeMatches);
-//
-//        // Add TeamResultsRegistry for away matches
-//        List<TeamResultsRegistry> awayMatches = resultMessage.getAwayMatches().stream().map(match -> {
-//            TeamResultsRegistry registry = new TeamResultsRegistry();
-//            registry.setMatchDateTime(match.getMatchDateTime());
-//            registry.setPointsGainedAway(match.getPointsGainedAway());
-//            registry.setGoalsScoredAway(match.getGoalsScoredAway());
-//            registry.setWdlAwayTeam(match.getWdlAwayTeam());
-//            registry.setAwayTeam(team);
-//            return registry;
-//        }).collect(Collectors.toList());
-//
-//        team.setAwayMatches(awayMatches);
-//
-//        // Save everything
+        teamResultsRegistryRepository.save(homeTeamRegistryEntry);
+        teamResultsRegistryRepository.save(awayTeamRegistryEntry);
 
     }
 }
