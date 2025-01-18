@@ -29,8 +29,6 @@ public class ResultProcessingService {
     @Autowired
     private TeamResultsRegistryRepository teamResultsRegistryRepository;
 
-//    private final GeneralTeamStatsService generalTeamStatsService;
-
     public void populateResultData(ResultMessage resultMessage) {
         // Check or create the home team
         Team homeTeam = teamRepository.findByTeamName(resultMessage.getHomeTeam())
