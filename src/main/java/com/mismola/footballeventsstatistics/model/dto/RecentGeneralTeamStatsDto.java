@@ -1,7 +1,5 @@
 package com.mismola.footballeventsstatistics.model.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import lombok.*;
 
 @RequiredArgsConstructor

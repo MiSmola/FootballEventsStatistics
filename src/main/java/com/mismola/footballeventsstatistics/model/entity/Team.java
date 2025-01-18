@@ -1,11 +1,8 @@
 package com.mismola.footballeventsstatistics.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -22,7 +19,7 @@ public class Team {
     private Integer id;
 
     @Column(name = "team_name")
-    @JsonProperty("team_name")
+//    @JsonProperty("team_name")
     private String teamName;
 
     // One-to-One relationship with GeneralTeamStats

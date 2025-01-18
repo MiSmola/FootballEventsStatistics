@@ -2,10 +2,9 @@ package com.mismola.footballeventsstatistics.controller.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.GetStatisticsMessage;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.ResultMessage;
-import com.mismola.footballeventsstatistics.services.GetStatisticsProcessingService;
-import com.mismola.footballeventsstatistics.services.ResultProcessingService;
+import com.mismola.footballeventsstatistics.service.GetStatisticsProcessingService;
+import com.mismola.footballeventsstatistics.service.ResultProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
