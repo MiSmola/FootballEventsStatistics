@@ -9,12 +9,12 @@ import com.mismola.footballeventsstatistics.model.entity.WDLResult;
 import com.mismola.footballeventsstatistics.model.repository.GeneralTeamStatsRepository;
 import com.mismola.footballeventsstatistics.model.repository.TeamRepository;
 import com.mismola.footballeventsstatistics.model.repository.TeamResultsRegistryRepository;
-//import com.mismola.footballeventsstatistics.model.service.GeneralTeamStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,17 +54,17 @@ public class ResultProcessingService {
         //TODO: Transfer to some static utils methods
         Integer homeTeamPointsEarned;
         Integer awayTeamPointsEarned;
-        if(resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
+        if (resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
             homeTeamPointsEarned = 3;
             awayTeamPointsEarned = 0;
-        } else if(resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
+        } else if (resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
             homeTeamPointsEarned = 0;
             awayTeamPointsEarned = 3;
         } else {
             homeTeamPointsEarned = 1;
             awayTeamPointsEarned = 1;
         }
-
+        //FIXME: fix redundancy
         GeneralTeamStats statsHome = generalTeamStatsRepository.findByTeam(homeTeam)
                 .orElseGet(() -> {
                     GeneralTeamStats newStats = new GeneralTeamStats();
@@ -98,7 +98,6 @@ public class ResultProcessingService {
         );
 
         // Save and return the updated stats
-
 
 
         GeneralTeamStats statsAway = generalTeamStatsRepository.findByTeam(awayTeam)
@@ -141,10 +140,10 @@ public class ResultProcessingService {
 
         WDLResult homeTeamRegistryWDL;
         WDLResult awayTeamRegistryWDL;
-        if(resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
+        if (resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
             homeTeamRegistryWDL = WDLResult.W;
             awayTeamRegistryWDL = WDLResult.L;
-        } else if(resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
+        } else if (resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
             homeTeamRegistryWDL = WDLResult.L;
             awayTeamRegistryWDL = WDLResult.W;
         } else {
@@ -171,5 +170,26 @@ public class ResultProcessingService {
         teamResultsRegistryRepository.save(homeTeamRegistryEntry);
         teamResultsRegistryRepository.save(awayTeamRegistryEntry);
 
+    }
+
+    public String customResultResponse(ResultMessage resultMessage) {
+        Team homeTeam = teamRepository.findByTeamName(resultMessage.getHomeTeam())
+                .orElseThrow(() -> new RuntimeException("Not found team " + resultMessage.getHomeTeam()));
+        Team awayTeam = teamRepository.findByTeamName(resultMessage.getAwayTeam())
+                .orElseThrow(() -> new RuntimeException("Not found team " + resultMessage.getAwayTeam()));
+        GeneralTeamStats homeTeamGeneralStats = generalTeamStatsRepository.findByTeam(homeTeam)
+                .orElseThrow(() -> new RuntimeException("No Stats entry found for " + resultMessage.getHomeTeam()));
+        GeneralTeamStats awayTeamGeneralStats = generalTeamStatsRepository.findByTeam(awayTeam)
+                .orElseThrow(() -> new RuntimeException("No Stats entry found for " + resultMessage.getHomeTeam()));
+        return resultMessage.getHomeTeam() + " " +
+                homeTeamGeneralStats.getSumOfPlayedEvents() + " " +
+                homeTeamGeneralStats.getSumOfPoints() + " " +
+                homeTeamGeneralStats.getSumOfGoalsScored() + " " +
+                homeTeamGeneralStats.getSumOfGoalsConceded() + "\n" +
+                resultMessage.getAwayTeam() + " " +
+                awayTeamGeneralStats.getSumOfPlayedEvents() + " " +
+                awayTeamGeneralStats.getSumOfPoints() + " " +
+                awayTeamGeneralStats.getSumOfGoalsScored() + " " +
+                awayTeamGeneralStats.getSumOfGoalsConceded() + "\n";
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.GetStatisticsMessage;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.ResultMessage;
+import com.mismola.footballeventsstatistics.services.GetStatisticsProcessingService;
 import com.mismola.footballeventsstatistics.services.ResultProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,9 @@ public class IncomingMessageController {
 
     @Autowired
     private ResultProcessingService resultProcessingService;
+
+    @Autowired
+    private GetStatisticsProcessingService getStatisticsProcessingService;
 
 //    @Autowired
 //    private GeneralTeamStatsService generalTeamStatsService;
@@ -53,9 +57,9 @@ public class IncomingMessageController {
             for (JsonNode teamNode : teamsNode) {
                 teams.add(teamNode.asText());
             }
-            GetStatisticsMessage getStatisticsMessage = GetStatisticsMessage.builder().teams(teams).build();
+//            GetStatisticsMessage getStatisticsMessage = GetStatisticsMessage.builder().teams(teams).build();
             log.info(teams.toString());
-            return handleGetStatisticsMessage(new GetStatisticsMessage());
+            return handleGetStatisticsMessage(teams);
 
         } else {
             return "Unsupported message type: " + type;
@@ -63,15 +67,14 @@ public class IncomingMessageController {
     }
 
     private String handleResultMessage(ResultMessage resultMessage) {
-        //TODO: ResultMessage logic
         resultProcessingService.populateResultData(resultMessage);
-        log.info("RESULT message detected");
-        return "RESULT message detected";
+        return resultProcessingService.customResultResponse(resultMessage);
     }
 
-    private String handleGetStatisticsMessage(GetStatisticsMessage getStatisticsMessage) {
+    private String handleGetStatisticsMessage(List<String> teamNames) {
         //TODO: GetStatisticsMessage logic
+
         log.info("GET_STATISTICS message detected");
-        return "GET_STATISTICS message detected";
+        return getStatisticsProcessingService.customGetStatisticsResponse(teamNames);
     }
 }

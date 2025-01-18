@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface GeneralTeamStatsRepository extends JpaRepository<GeneralTeamStats, Integer> {
     // Find by Team entity
     Optional<GeneralTeamStats> findByTeam(Team team);
-//    GeneralTeamStats findByTeamId(Integer teamId);
+
+//    GeneralTeamStats findByTeam(Team team);
 
 }
