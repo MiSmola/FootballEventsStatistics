@@ -99,6 +99,8 @@ For proper operation, adjusting following settings in `application.properties` i
 
 ![Database Schema](doc/DB_schema.svg)
 
+## Class Diagram
+![Class Diagram](doc/footballeventsstatistics.png)
 ---
 *Note: 
 Running in IntelliJIDEA might require 'Enabling annotation processing'.
