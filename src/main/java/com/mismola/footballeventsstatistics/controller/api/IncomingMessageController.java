@@ -1,4 +1,4 @@
-package com.mismola.footballeventsstatistics.controller;
+package com.mismola.footballeventsstatistics.controller.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mismola.footballeventsstatistics.controller.api.dto.incomingmessage.ResultMessage;
@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-
+/**
+ * Class managing the main logic of the endpoint that consumes incoming JSON message and processes it.
+ */
 @RestController
-@RequestMapping("/api/message")
+@RequestMapping("/message")
 public class IncomingMessageController {
 
     private static final Logger log = Logger.getLogger(IncomingMessageController.class.getName());
@@ -30,6 +32,9 @@ public class IncomingMessageController {
     private GetStatisticsProcessingService getStatisticsProcessingService;
 
     @PostMapping
+    /**
+     * Handles the incoming POST API requests.
+     */
     public ResponseEntity<String> processMessage(@RequestBody JsonNode jsonNode) {
         try {
             validateInput(jsonNode);
@@ -48,22 +53,53 @@ public class IncomingMessageController {
                     return ResponseEntity.badRequest().body("Unsupported message type: " + type);
             }
 
-        } catch (InvalidInputException e) {
+        }catch (InvalidInputException e) {
             log.warning(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
+        }catch (Exception e) {
             log.severe("Unexpected error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while processing the message.");
         }
     }
 
+    /**
+     * Method that invokes the processing of data received with a "result" message type.
+     * @param resultMessage Data transfer object with obtained information.
+     * @return Formatted response with general information on updated teams.
+     */
+    private String handleResultMessage(ResultMessage resultMessage) {
+        log.info("Processing RESULT message");
+        resultProcessingService.populateResultData(resultMessage);
+        return resultProcessingService.customResultResponse(resultMessage);
+    }
+
+    /**
+     * Method that invokes further processing related to "get_statistics" message type.
+     * @param teamNames List of fetched teams' names.
+     * @return Formatted response with information about last 3 matches played by requested teams.
+     */
+    private String handleGetStatisticsMessage(List<String> teamNames) {
+        log.info("Processing GET_STATISTICS message");
+        return getStatisticsProcessingService.customGetStatisticsResponse(teamNames);
+    }
+
+    /**
+     * Checking incoming JSON for the "type" field presence.
+     * @param jsonNode Object that contains the fetched JSON data.
+     */
     private void validateInput(JsonNode jsonNode) {
         if (jsonNode == null || !jsonNode.has("type")) {
             throw new InvalidInputException("Invalid message: Missing 'type' field.");
         }
     }
 
+    /**
+     * Method that parses the data from the fetched JSON, provided by the "result" type of message.
+     * Additionally, it checks for the incoming JSON data types compliance.
+     * @param jsonNode Object that contains the fetched JSON data.
+     * @return Data transfer object that contains the fetched data of type "result".
+     */
     private ResultMessage parseResultMessage(JsonNode jsonNode) {
         JsonNode resultNode = jsonNode.path("result");
 
@@ -79,10 +115,18 @@ public class IncomingMessageController {
                 .build();
     }
 
+    /**
+     * Method that parses the data from the fetched JSON, provided by the "get_statistics" type of message.
+     * @param jsonNode Object that contains the fetched JSON data.
+     * @return List that contains all fetched teams' names.
+     */
     private List<String> parseStatisticsTeams(JsonNode jsonNode) {
         JsonNode teamsNode = jsonNode.path("get_statistics").path("teams");
         if (!teamsNode.isArray()) {
-            throw new InvalidInputException("'teams' must be an array of strings.");
+            throw new InvalidInputException("'teams' must be an array.");
+        }
+        if (teamsNode.isEmpty()) {
+            throw new InvalidInputException("Empty 'teams' array provided.");
         }
 
         List<String> teams = new ArrayList<>();
@@ -92,18 +136,11 @@ public class IncomingMessageController {
         return teams;
     }
 
-    private String handleResultMessage(ResultMessage resultMessage) {
-        log.info("Processing RESULT message");
-        resultProcessingService.populateResultData(resultMessage);
-        return resultProcessingService.customResultResponse(resultMessage);
-    }
 
-    private String handleGetStatisticsMessage(List<String> teamNames) {
-        log.info("Processing GET_STATISTICS message");
-        return getStatisticsProcessingService.customGetStatisticsResponse(teamNames);
-    }
-
-    private static class InvalidInputException extends RuntimeException {
+    /**
+     * Handling custom exceptions related to input JSON.
+     */
+    public static class InvalidInputException extends RuntimeException {
         public InvalidInputException(String message) {
             super(message);
         }

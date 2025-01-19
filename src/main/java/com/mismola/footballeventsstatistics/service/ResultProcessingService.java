@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+/**
+ * Service class related to handling operations related to "result" message type.
+ */
 @Service
 @RequiredArgsConstructor
 public class ResultProcessingService {
@@ -27,8 +30,12 @@ public class ResultProcessingService {
     @Autowired
     private TeamResultsRegistryRepository teamResultsRegistryRepository;
 
+    /**
+     * Combining and populating the DB with data based on the information provided in "result" message type.
+     * @param resultMessage Data retrieved form JSON.
+     */
     public void populateResultData(ResultMessage resultMessage) {
-        // Check or create the home team
+        // Checking for presence in DB or creating the new home and away teams
         Team homeTeam = teamRepository.findByTeamName(resultMessage.getHomeTeam())
                 .orElseGet(() -> {
                     Team newHomeTeam = new Team();
@@ -36,7 +43,6 @@ public class ResultProcessingService {
                     return newHomeTeam;
                 });
 
-        // Check or create the away team
         Team awayTeam = teamRepository.findByTeamName(resultMessage.getAwayTeam())
                 .orElseGet(() -> {
                     Team newAwayTeam = new Team();
@@ -47,27 +53,11 @@ public class ResultProcessingService {
         teamRepository.save(homeTeam);
         teamRepository.save(awayTeam);
 
-
-
-
-        //TODO: Transfer to some static utils methods
-//        Integer homeTeamPointsEarned;
-//        Integer awayTeamPointsEarned;
-//        if (resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
-//            homeTeamPointsEarned = 3;
-//            awayTeamPointsEarned = 0;
-//        } else if (resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
-//            homeTeamPointsEarned = 0;
-//            awayTeamPointsEarned = 3;
-//        } else {
-//            homeTeamPointsEarned = 1;
-//            awayTeamPointsEarned = 1;
-//        }
-        //FIXME: fix redundancy
+        //Retrieving or creating new entry for General Team Statistics
         GeneralTeamStats statsHome = generalTeamStatsRepository.findByTeam(homeTeam)
                 .orElseGet(() -> {
                     GeneralTeamStats newStats = new GeneralTeamStats();
-                    newStats.setTeam(homeTeam); // Link to the team
+                    newStats.setTeam(homeTeam);
                     return newStats;
                 });
 
@@ -78,16 +68,14 @@ public class ResultProcessingService {
                 .sumOfGoalsConceded(resultMessage.getAwayScore())
                 .build();
 
-        // Update stats with additional data
+        // Updating stats with new data
         createOrUpdateGeneralStats(statsHome, homeTeamStatsDto);
 
-        // Save and return the updated stats
-
-
+        //Retrieving or creating new entry for General Team Statistics
         GeneralTeamStats statsAway = generalTeamStatsRepository.findByTeam(awayTeam)
                 .orElseGet(() -> {
                     GeneralTeamStats newStats = new GeneralTeamStats();
-                    newStats.setTeam(awayTeam); // Link to the team
+                    newStats.setTeam(awayTeam);
                     return newStats;
                 });
 
@@ -98,28 +86,18 @@ public class ResultProcessingService {
                 .sumOfGoalsConceded(resultMessage.getHomeScore())
                 .build();
 
-        // Update stats with additional data
+        // Updating stats with new data
         createOrUpdateGeneralStats(statsAway, awayTeamStatsDto);
 
-        // Save and return the updated stats
         generalTeamStatsRepository.save(statsHome);
         generalTeamStatsRepository.save(statsAway);
 
-/// //////////////////////////////////////////////////////////////////////////////////////
-
-//        WDLResult homeTeamRegistryWDL;
-//        WDLResult awayTeamRegistryWDL;
-//        if (resultMessage.getHomeScore() > resultMessage.getAwayScore()) {
-//            homeTeamRegistryWDL = WDLResult.W;
-//            awayTeamRegistryWDL = WDLResult.L;
-//        } else if (resultMessage.getHomeScore() < resultMessage.getAwayScore()) {
-//            homeTeamRegistryWDL = WDLResult.L;
-//            awayTeamRegistryWDL = WDLResult.W;
-//        } else {
-//            homeTeamRegistryWDL = WDLResult.D;
-//            awayTeamRegistryWDL = WDLResult.D;
-//        }
+        //In the registry of individual results, both teams participating in a match
+        //are provided with the same date and time of entry, in order to allow identifying them
+        //and sorting for the purposes of retrieving last 3 matches information in 'GetStatisticsProcessingService'.
         Date matchEntryDate = new Date();
+
+        //Supplementing and combining data for the MatchRegistry
         TeamResultsRegistry homeTeamRegistryEntry = TeamResultsRegistry.builder()
                 .matchDateTime(matchEntryDate)
                 .wdlResult(Utils.defineWDLStatusByScores(resultMessage).getFirst())
@@ -141,25 +119,35 @@ public class ResultProcessingService {
 
     }
 
-    private void createOrUpdateGeneralStats(GeneralTeamStats statsAway, RecentGeneralTeamStatsDto awayTeamStatsDto) {
-        statsAway.setSumOfPlayedEvents(
-                (statsAway.getSumOfPlayedEvents() != null ? statsAway.getSumOfPlayedEvents() : 0)
-                        + (awayTeamStatsDto.getSumOfPlayedEvents() != null ? awayTeamStatsDto.getSumOfPlayedEvents() : 0)
+    /**
+     * Creating or updating the table representing the Teams' General Statistics.
+     * @param teamStatistics Information from DB.
+     * @param teamStatsDto Fresh data that needs to be added to the DB.
+     */
+    private void createOrUpdateGeneralStats(GeneralTeamStats teamStatistics, RecentGeneralTeamStatsDto teamStatsDto) {
+        teamStatistics.setSumOfPlayedEvents(
+                (teamStatistics.getSumOfPlayedEvents() != null ? teamStatistics.getSumOfPlayedEvents() : 0)
+                        + (teamStatsDto.getSumOfPlayedEvents() != null ? teamStatsDto.getSumOfPlayedEvents() : 0)
         );
-        statsAway.setSumOfPoints(
-                (statsAway.getSumOfPoints() != null ? statsAway.getSumOfPoints() : 0)
-                        + (awayTeamStatsDto.getSumOfPoints() != null ? awayTeamStatsDto.getSumOfPoints() : 0)
+        teamStatistics.setSumOfPoints(
+                (teamStatistics.getSumOfPoints() != null ? teamStatistics.getSumOfPoints() : 0)
+                        + (teamStatsDto.getSumOfPoints() != null ? teamStatsDto.getSumOfPoints() : 0)
         );
-        statsAway.setSumOfGoalsScored(
-                (statsAway.getSumOfGoalsScored() != null ? statsAway.getSumOfGoalsScored() : 0)
-                        + (awayTeamStatsDto.getSumOfGoalsScored() != null ? awayTeamStatsDto.getSumOfGoalsScored() : 0)
+        teamStatistics.setSumOfGoalsScored(
+                (teamStatistics.getSumOfGoalsScored() != null ? teamStatistics.getSumOfGoalsScored() : 0)
+                        + (teamStatsDto.getSumOfGoalsScored() != null ? teamStatsDto.getSumOfGoalsScored() : 0)
         );
-        statsAway.setSumOfGoalsConceded(
-                (statsAway.getSumOfGoalsConceded() != null ? statsAway.getSumOfGoalsConceded() : 0)
-                        + (awayTeamStatsDto.getSumOfGoalsConceded() != null ? awayTeamStatsDto.getSumOfGoalsConceded() : 0)
+        teamStatistics.setSumOfGoalsConceded(
+                (teamStatistics.getSumOfGoalsConceded() != null ? teamStatistics.getSumOfGoalsConceded() : 0)
+                        + (teamStatsDto.getSumOfGoalsConceded() != null ? teamStatsDto.getSumOfGoalsConceded() : 0)
         );
     }
 
+    /**
+     * Constructing the response for "result" message type request.
+     * @param resultMessage Information fetched and processed from the request JSON.
+     * @return Formatted response text.
+     */
     public String customResultResponse(ResultMessage resultMessage) {
         Team homeTeam = teamRepository.findByTeamName(resultMessage.getHomeTeam())
                 .orElseThrow(() -> new RuntimeException("Not found team " + resultMessage.getHomeTeam()));

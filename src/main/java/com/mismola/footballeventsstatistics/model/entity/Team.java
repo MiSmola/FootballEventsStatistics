@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 
-//@RequiredArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
@@ -19,7 +18,6 @@ public class Team {
     private Integer id;
 
     @Column(name = "team_name")
-//    @JsonProperty("team_name")
     private String teamName;
 
     // One-to-One relationship with GeneralTeamStats

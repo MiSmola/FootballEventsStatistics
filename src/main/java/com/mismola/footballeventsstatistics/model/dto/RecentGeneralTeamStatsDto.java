@@ -2,6 +2,9 @@ package com.mismola.footballeventsstatistics.model.dto;
 
 import lombok.*;
 
+/**
+ * Data transfer object for handling manipulations on General Teams' Statistics.
+ */
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Getter
